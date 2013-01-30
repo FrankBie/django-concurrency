@@ -10,12 +10,12 @@ class RecordModifiedError(DatabaseError):
 def _select_lock(obj, version=None):
     kwargs = {'pk': obj.pk, obj.RevisionMetaInfo.field.name: version or getattr(obj, obj.RevisionMetaInfo.field.name)}
     # mysql do not support no wait
-	# see https://docs.djangoproject.com/en/dev/ref/models/querysets/#django.db.models.query.QuerySet.select_for_update
-	entry = None
-	if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
-		entry = obj.__class__.objects.select_for_update().filter(**kwargs)
+    # see https://docs.djangoproject.com/en/dev/ref/models/querysets/#django.db.models.query.QuerySet.select_for_update
+    entry = None
+    if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
+        entry = obj.__class__.objects.select_for_update().filter(**kwargs)
     else:
-		entry = obj.__class__.objects.select_for_update(nowait=True).filter(**kwargs)
+        entry = obj.__class__.objects.select_for_update(nowait=True).filter(**kwargs)
     if not entry:
         if getattr(obj, obj.RevisionMetaInfo.field.name) == 0:
             raise RecordModifiedError(_('Version field is 0 but record has `pk`.'))
