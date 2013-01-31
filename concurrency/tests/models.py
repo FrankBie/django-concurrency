@@ -31,18 +31,32 @@ class ConcurrentModel(models.Model):
     class Meta:
         app_label = 'concurrency'
 
+
 class ConcurrentAutoIncModel(models.Model):
     version = AutoIncVersionField(db_column='cm_version_id')
 
     class Meta:
         app_label = 'concurrency'
 
+
+# class DateConcurrentModel(models.Model):
+#     version = DateTimeVersionField()
+#     username = models.CharField(max_length=30, blank=True, null=True)
+#     last_name = models.CharField(max_length=30, blank=True, null=True)
+#     char_field = models.CharField(max_length=30, blank=True, null=True)
+#     date_field = models.DateField(blank=True, null=True)
+#
+#     class Meta:
+#         app_label = 'concurrency'
+
+
 class MyMeta(ModelBase):
     pass
 
+
 class AbstractModelWithCustomSave(models.Model):
     __metaclass__ = MyMeta
-    version = RawIntegerVersionField(db_column='cm_version_id')
+    version = IntegerVersionField(db_column='cm_version_id', manually=True)
 
     class Meta:
         abstract = True
@@ -53,16 +67,30 @@ class AbstractModelWithCustomSave(models.Model):
         super(AbstractModelWithCustomSave, self).save(force_insert, force_update, using)
         return 'AbstractModelWithCustomSave'
 
-class ModelWithAbstractCustomSave(AbstractModelWithCustomSave):
+
+class ModelWithCustomSave(AbstractModelWithCustomSave):
     username = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=30, blank=True, null=True)
 
     class Meta:
         app_label = 'concurrency'
 
-#    def save(self, force_insert=False, force_update=False, using=None):
-#        super(ModelWithAbstractCustomSave, self).save(force_insert, force_update, using)
-#        return 'ModelWithAbstractCustomSave'
+    def save(self, force_insert=False, force_update=False, using=None):
+        ret = super(ModelWithCustomSave, self).save(force_insert, force_update, using)
+        return 'ModelWithCustomSave', ret
+
+
+class ModelAutoIncWithCustomSave(ConcurrentAutoIncModel):
+    username = models.CharField(max_length=30, blank=True, null=True)
+    last_name = models.CharField(max_length=30, blank=True, null=True)
+
+    class Meta:
+        app_label = 'concurrency'
+
+    def save(self, force_insert=False, force_update=False, using=None):
+        ret = super(ModelAutoIncWithCustomSave, self).save(force_insert, force_update, using)
+        return 'ModelAutoIncWithCustomSave', ret
+
 
 
 class TestModel0(ConcurrentModel):
@@ -142,7 +170,6 @@ class TestModelGroup(Group):
 
 
 class TestModelGroupWithCustomSave(TestModelGroup):
-
     class Meta:
         app_label = 'concurrency'
 

@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-import time
-from django.db.models.fields.related import ForeignKey
-from django.forms import model_to_dict
-from django.utils.translation import gettext as _
-
-from concurrency.core import RecordModifiedError, _versioned_save
+from concurrency.core import RecordModifiedError
 
 logger = logging.getLogger('tests.concurrency')
 logger.setLevel(logging.DEBUG)
@@ -49,8 +44,9 @@ class ConcurrencyTestMixin(object):
     def test_concurrency_conflict(self):
         target = self._get_concurrency_target()
         target_copy = self._get_concurrency_target()
-        assert get_revision_of_object(target) == get_revision_of_object(
-            target_copy), "got same row with different version"
+        v1 = get_revision_of_object(target)
+        v2 = get_revision_of_object(target_copy)
+        assert v1 == v2, "got same row with different version (%s/%s)" % (v1, v2)
         target.save()
         self.assertRaises(RecordModifiedError, target_copy.save)
 

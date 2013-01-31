@@ -1,4 +1,3 @@
-from concurrency.core import RecordModifiedError
 from django.forms.models import modelform_factory, model_to_dict
 from django.forms.widgets import HiddenInput, TextInput
 from django.utils.unittest.case import TestCase
@@ -22,7 +21,7 @@ class ConcurrentFormTest(TestCase):
     def test_save(self):
         obj, __ = TestIssue3Model.objects.get_or_create(username='aaa')
         Form = modelform_factory(TestIssue3Model, ConcurrentForm)
-        form = Form(model_to_dict(obj), instance=obj)#
+        form = Form(model_to_dict(obj), instance=obj)
         obj.save() # save again simulate concurrent editing
         self.assertFalse(form.is_valid())
         self.assertIn('Record Modified', form.non_field_errors())
@@ -30,6 +29,6 @@ class ConcurrentFormTest(TestCase):
     def test_is_valid(self):
         obj, __ = TestIssue3Model.objects.get_or_create(username='aaa')
         Form = modelform_factory(TestIssue3Model, ConcurrentForm)
-        form = Form(model_to_dict(obj), instance=obj)#
+        form = Form(model_to_dict(obj), instance=obj)
         obj.save() # save again simulate concurrent editing
         self.assertRaises(ValueError, form.save)
